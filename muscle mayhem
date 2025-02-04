@@ -1,0 +1,177 @@
+local player = game.Players.LocalPlayer
+local starterGui = player:WaitForChild("PlayerGui")
+local backpack = player:WaitForChild("Backpack")
+local character = player.Character or player.CharacterAdded:Wait()
+local players = game.Players:GetPlayers()
+
+-- GUI utama
+local autoClickerGui = Instance.new("ScreenGui")
+autoClickerGui.Name = "AutoClickerGui"
+autoClickerGui.Parent = starterGui
+
+-- Frame utama
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 220, 0, 240) -- Ukuran lebih kecil
+mainFrame.Position = UDim2.new(0.5, -110, 0.5, -120) -- Posisinya tetap di tengah
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BackgroundTransparency = 0.3
+mainFrame.Visible = false
+mainFrame.Parent = autoClickerGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 10) -- Sudut lebih bulat
+frameCorner.Parent = mainFrame
+
+-- **TextLabel "By developersimulator2"**
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Size = UDim2.new(1, -10, 0, 20) -- Ukuran lebih kecil dan pas
+creditLabel.Position = UDim2.new(0, 5, 0, 5) -- Pindah ke kiri sedikit
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text = "By developersimulator2"
+creditLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+creditLabel.TextScaled = false -- Nonaktifkan TextScaled agar ukurannya tetap
+creditLabel.TextSize = 12 -- Ukuran teks lebih kecil
+creditLabel.Font = Enum.Font.SourceSans
+creditLabel.TextXAlignment = Enum.TextXAlignment.Left -- Align ke kiri
+creditLabel.Parent = mainFrame
+
+-- Tombol Close
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25) -- Ukuran lebih kecil
+closeButton.Position = UDim2.new(1, -30, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+closeButton.Text = "X"
+closeButton.TextSize = 14
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.BorderSizePixel = 0
+closeButton.Parent = mainFrame
+
+local closeButtonCorner = Instance.new("UICorner")
+closeButtonCorner.CornerRadius = UDim.new(0, 6)
+closeButtonCorner.Parent = closeButton
+
+-- Tombol Open
+local openButton = Instance.new("TextButton")
+openButton.Size = UDim2.new(0, 70, 0, 35) -- Ukuran lebih kecil
+openButton.Position = UDim2.new(0, 10, 0.5, -17) -- Posisikan dengan baik
+openButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+openButton.Text = "Open"
+openButton.TextScaled = true
+openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+openButton.Parent = autoClickerGui
+
+local openButtonCorner = Instance.new("UICorner")
+openButtonCorner.CornerRadius = UDim.new(0, 10)
+openButtonCorner.Parent = openButton
+
+-- Scrolling Frame
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -10, 1, -50) -- Ukuran lebih kecil dan pas
+scrollFrame.Position = UDim2.new(0, 5, 0, 35)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+scrollFrame.ScrollBarThickness = 6
+scrollFrame.Parent = mainFrame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Parent = scrollFrame
+listLayout.Padding = UDim.new(0, 6) -- Padding lebih kecil agar tombol rapat
+
+-- Tombol Auto Lift
+local autoLiftButton = Instance.new("TextButton")
+autoLiftButton.Size = UDim2.new(1, -10, 0, 40) -- Ukuran lebih kecil
+autoLiftButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+autoLiftButton.Text = "Auto Lift: OFF"
+autoLiftButton.TextScaled = true
+autoLiftButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoLiftButton.BorderSizePixel = 0
+autoLiftButton.Parent = scrollFrame
+
+local autoLiftCorner = Instance.new("UICorner")
+autoLiftCorner.CornerRadius = UDim.new(0, 6)
+autoLiftCorner.Parent = autoLiftButton
+
+-- Tombol Auto Kill
+local autoKillButton = Instance.new("TextButton")
+autoKillButton.Size = UDim2.new(1, -10, 0, 40) -- Ukuran lebih kecil
+autoKillButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+autoKillButton.Text = "Auto Kill: OFF"
+autoKillButton.TextScaled = true
+autoKillButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoKillButton.BorderSizePixel = 0
+autoKillButton.Parent = scrollFrame
+
+local autoKillCorner = Instance.new("UICorner")
+autoKillCorner.CornerRadius = UDim.new(0, 6)
+autoKillCorner.Parent = autoKillButton
+
+-- Variabel Auto Lift & Auto Kill
+local autoLiftActive = false
+local autoKillActive = false
+
+-- Fungsi Equip Tool
+local function equipWeight()
+    local tool = backpack:FindFirstChild("Weight")
+    if tool then
+        tool.Parent = character
+    else
+        warn("Weight tool not found in Backpack.")
+    end
+end
+
+local function equipCombat()
+    local tool = backpack:FindFirstChild("Combat")
+    if tool then
+        tool.Parent = character
+    else
+        warn("Combat tool not found in Backpack.")
+    end
+end
+
+-- Auto-Click Weight
+local function autoClickWeight()
+    while autoLiftActive do
+        equipWeight()
+        local tool = character:FindFirstChild("Weight")
+        if tool then
+            tool:Activate()
+        end
+        wait(0.1) -- Menunggu sedikit lebih lama untuk menghindari looping yang terlalu cepat
+    end
+end
+
+-- Auto-Click Combat
+local function autoClickCombat()
+    while autoKillActive do
+        equipCombat()
+        local tool = character:FindFirstChild("Combat")
+        if tool then
+            tool:Activate()
+        end
+        wait(0.1) -- Menunggu sedikit lebih lama untuk menghindari looping yang terlalu cepat
+    end
+end
+
+-- LoopBring Player
+local function loopBringPlayers()
+    while autoKillActive do
+        for _, otherPlayer in pairs(players) do
+            if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                otherPlayer.Character:SetPrimaryPartCFrame(character.HumanoidRootPart.CFrame)
+            end
+        end
+        wait(0.1) -- Menunggu lebih lama untuk menghindari looping yang terlalu cepat
+    end
+end
+
+-- ON/OFF Auto Lift
+autoLiftButton.MouseButton1Click:Connect(function()
+    autoLiftActive = not autoLiftActive
+
+    if autoLiftActive then
+        autoLiftButton.Text = "Auto Lift: ON"
+        autoLiftButton.BackgroundColor3 = Color3.fromRGB(40, 180, 40)
+        equipWeight()
+        task.spawn(autoClickWeight)
+    else
+        autoLiftButton.Text = "Auto Lift: OFF"
+        autoLiftButton.BackgroundColor3 = Color3.fromRGB(255, 50,
