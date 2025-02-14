@@ -1,0 +1,269 @@
+local Players = game:GetService("Players") 
+local LocalPlayer = Players.LocalPlayer -- Mendapatkan LocalPlayer dengan benar
+
+-- Memuat Library Orion
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/jensonhirst/Orion/main/source"))()
+
+-- Membuat jendela UI
+local Window = OrionLib:MakeWindow({
+    Name = "by Jonrickhh",
+    HidePremium = false,
+    SaveConfig = true,
+    ConfigFolder = "OrionTest"
+})
+
+-- Membuat Tab dalam UI
+local Tab = Window:MakeTab({
+    Name = "Menu",
+    Icon = "rbxassetid://4483345998",
+    PremiumOnly = false
+})
+
+-- Menambahkan Section ke dalam Tab
+local Section = Tab:AddSection({
+    Name = "menu 1"
+})
+
+
+local player = game.Players.LocalPlayer
+local runningKill = false
+
+-- CFrame untuk teleportasi
+local teleportCFrame = CFrame.new(
+    -1652.34546, 387.508087, -3158.4978, 0.999360502, -0.0348186418, -0.00814874098, 0.0354628488, 0.994285643, 0.100690305, 0.00459627993, -0.100914881, 0.994884551
+)
+
+-- Fungsi untuk teleportasi pemain
+local function teleportPlayer()
+    if player and player.Character then
+        local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            humanoidRootPart.CFrame = teleportCFrame
+        end
+    end
+end
+
+-- Fungsi untuk equip dan activate tools
+local function EquipTool(toolName)
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        local tool = backpack:FindFirstChild(toolName)
+        if tool and not player.Character:FindFirstChild(toolName) then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:EquipTool(tool)
+            end
+        end
+    end
+end
+
+-- Fungsi AutoKill (Auto Farm)
+local function AutoKill()
+    while runningKill do
+        teleportPlayer() -- Teleport setiap detik
+        
+        -- Equip & gunakan Combat
+        EquipTool("Combat")
+        local combat = player.Character and player.Character:FindFirstChild("Combat")
+        if combat then
+            combat:Activate()  
+        end
+        
+        -- Equip & gunakan Weight
+        EquipTool("Weight")
+        local weight = player.Character and player.Character:FindFirstChild("Weight")
+        if weight then
+            weight:Activate()  
+        end
+
+        task.wait(0.05) -- Teleport dan gunakan tool setiap 1 detik
+    end
+end
+
+-- ✅ Toggle untuk Auto Farm (Mengaktifkan Combat, Weight & Teleport setiap detik)
+Tab:AddToggle({
+    Name = "Auto farm",
+    Default = false,
+    Callback = function(Value)
+        runningKill = Value
+        if Value then
+            task.spawn(AutoKill) -- Jalankan AutoKill jika tombol aktif
+        end
+    end    
+})
+
+
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local runningKill = false
+local whitelist = {}
+local platform = nil  
+local killPosition = Vector3.new(0, 100, 0)  
+
+local function CreateKillPlatform()
+    if platform then platform:Destroy() end  
+    platform = Instance.new("Part")
+    platform.Size = Vector3.new(30, 1, 30)  
+    platform.Position = killPosition
+    platform.Anchored = true
+    platform.Transparency = 0.2
+    platform.Color = Color3.fromRGB(3, 0, 0)  
+    platform.Parent = game.Workspace
+end
+
+local function TeleportToKillPlatform()
+    CreateKillPlatform()
+    local hrp = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = CFrame.new(killPosition + Vector3.new(0, 3, 0))  
+    end
+end
+
+local function EquipTool(toolName)
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        local tool = backpack:FindFirstChild(toolName)
+        if tool and not player.Character:FindFirstChild(toolName) then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:EquipTool(tool)
+            end
+        end
+    end
+end
+
+local function FindAndMoveTargets()
+    local mainHRP = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not mainHRP then return end  
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player and not whitelist[plr.Name] and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+            local targetHRP = plr.Character:FindFirstChild("HumanoidRootPart")
+            if targetHRP then
+                targetHRP.CFrame = mainHRP.CFrame * CFrame.new(math.random(-3, 3), 0, -1.5)  
+            end
+        end
+    end
+end
+
+local function AutoKill()
+    TeleportToKillPlatform()  
+    while runningKill do
+        FindAndMoveTargets()  
+        EquipTool("Combat")
+        local combat = player.Character and player.Character:FindFirstChild("Combat")
+        if combat then
+            combat:Activate()  
+        end
+        task.wait(0.1)
+    end
+end
+
+-- ✅ Toggle untuk AutoKill
+Tab:AddToggle({
+    Name = "Auto Kill",
+    Default = false,
+    Callback = function(Value)
+        runningKill = Value
+        if Value then
+            task.spawn(AutoKill) -- Aktifkan AutoKill
+        else
+            if platform then platform:Destroy() end -- Hapus platform jika toggle mati
+        end
+    end    
+})
+
+
+
+
+local player = game.Players.LocalPlayer -- Mendapatkan player
+local buttonStates = {} -- Menyimpan status toggle Auto Level
+local autoLevelCoroutine -- Menyimpan coroutine Auto Level
+
+-- Tambahkan Toggle
+Tab:AddToggle({
+    Name = "Auto Level",
+    Default = false,
+    Callback = function(Value)
+        buttonStates["auto level"] = Value
+        
+        if Value then
+            print("Auto Level Aktif!")
+
+            -- Cek GUI Player
+            local gui = player:WaitForChild("PlayerGui")
+            local upgradeFrame = gui:FindFirstChild("UpgradeLevelbutton", true)
+
+            if upgradeFrame then
+                local clickButton = upgradeFrame:FindFirstChild("ClickButton", true)
+
+                if clickButton then
+                    -- Hentikan coroutine lama jika ada
+                    if autoLevelCoroutine then
+                        coroutine.close(autoLevelCoroutine)
+                    end
+
+                    -- Jalankan Auto Click untuk Upgrade Level
+                    autoLevelCoroutine = coroutine.create(function()
+                        while buttonStates["auto level"] do
+                            for _, connection in pairs(getconnections(clickButton.MouseButton1Click)) do
+                                connection.Function()
+                            end
+                            task.wait(0.001) -- Delay sangat kecil
+                        end
+                    end)
+                    coroutine.resume(autoLevelCoroutine)
+                else
+                    print("ClickButton tidak ditemukan di dalam UpgradeLevelbutton!")
+                end
+            else
+                print("UpgradeLevelbutton tidak ditemukan di dalam GUI!")
+            end
+        else
+            print("Auto Level Nonaktif!")
+
+            -- Hentikan Auto Level jika Toggle dimatikan
+            if autoLevelCoroutine then
+                coroutine.close(autoLevelCoroutine)
+                autoLevelCoroutine = nil
+            end
+        end
+    end    
+})
+
+local player = game.Players.LocalPlayer
+local lockedPosition = false
+
+
+
+
+local player = game.Players.LocalPlayer
+local buttonStates = {["auto spin"] = false} -- Menyimpan status toggle
+
+Tab:AddToggle({
+    Name = "Auto Spin",
+    Default = false,
+    Callback = function(Value)
+        buttonStates["auto spin"] = Value -- Menyimpan status toggle
+
+        if Value then
+            -- Jika Auto Spin diaktifkan
+            local gui = player:WaitForChild("PlayerGui")
+            local clickButton = gui:FindFirstChild("ClickButton_spin", true)
+
+            if clickButton then
+                task.spawn(function() -- Menjalankan Auto Spin dalam thread baru
+                    while buttonStates["auto spin"] do
+                        for _, connection in pairs(getconnections(clickButton.MouseButton1Click)) do
+                            connection.Function() -- Menjalankan klik tombol
+                        end
+                        task.wait(0.001) -- Tunggu sebentar agar tidak terlalu cepat
+                    end
+                end)
+            else
+                print("ClickButton_spin tidak ditemukan!")
+            end
+        end
+    end    
+})
